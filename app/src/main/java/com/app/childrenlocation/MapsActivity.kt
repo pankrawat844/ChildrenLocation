@@ -1,11 +1,14 @@
 package com.app.childrenlocation
 
 import android.annotation.SuppressLint
+import android.location.Location
 import android.os.Bundle
 import android.os.Looper
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.firebase.geofire.GeoFire
+import com.firebase.geofire.GeoLocation
+import com.firebase.geofire.GeoQuery
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -31,6 +34,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var locationCallback: LocationCallback
     private  var currentMarker: Marker?=null
     private lateinit var mylocationRef:DatabaseReference
+    private lateinit var dangerousArea:MutableList<LatLng>
+    private lateinit var listener: IOnLocationListener
+    private lateinit var myCity:DatabaseReference
+    private lateinit var lastLocation:Location
+    private lateinit var geoQuery: GeoQuery
     private lateinit var geoFire: GeoFire
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,11 +78,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                    {
                     currentMarker?.remove()
                    }
+                    geoFire!!.setLocation("You", GeoLocation(p0!!.lastLocation.latitude,p0!!.lastLocation.longitude))
+                    {_,_->
                     currentMarker=mMap.addMarker(MarkerOptions()
                     .position(LatLng(p0!!.lastLocation.latitude,p0!!.lastLocation.longitude))
                      .title("current location"))
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(currentMarker?.position,12.0f))
-
+                    }
 
 
                 }
