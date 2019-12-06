@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "335534857031",
+    "firebase_url": "https://geofire-78bdb.firebaseio.com",
+    "project_id": "geofire-78bdb",
+    "storage_bucket": "geofire-78bdb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:335534857031:android:977fdd63f11ab133380a62",
+        "android_client_info": {
+          "package_name": "com.app.childrenlocation"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "335534857031-v11oeb9vcf5sh1bms9bi487rgcesu25g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVqaaKWQZ9IL_WP2OprAy9wARFzWEZxFM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "335534857031-v11oeb9vcf5sh1bms9bi487rgcesu25g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
