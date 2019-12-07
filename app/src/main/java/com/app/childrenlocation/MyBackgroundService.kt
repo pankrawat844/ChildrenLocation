@@ -6,10 +6,13 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.location.Location
 import android.os.*
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import org.greenrobot.eventbus.EventBus
 import java.lang.Exception
 
@@ -37,8 +40,9 @@ class MyBackgroundService : Service() {
     private var locationCallback:LocationCallback?=null
     private var mserviceHandler:Handler?=null
     private var mLocation:Location?=null
+    private  var firebaseDatabase:FirebaseDatabase?=null
+    private var databaseReference:DatabaseReference?=null
     private val notification:Notification
-
     get() {
         val intent=Intent(this,MyBackgroundService::class.java)
         val text= com.app.childrenlocation.Common.getLocationText(mLocation)
@@ -105,6 +109,8 @@ class MyBackgroundService : Service() {
     }
 
     override fun onCreate() {
+        firebaseDatabase= FirebaseDatabase.getInstance()
+        databaseReference=firebaseDatabase!!.getReference("location")
         fusedLocationProviderClient=LocationServices.getFusedLocationProviderClient(this)
         locationCallback=object :LocationCallback(){
             override fun onLocationResult(p0: LocationResult?) {
@@ -152,7 +158,12 @@ class MyBackgroundService : Service() {
     }
 
     private fun onNewLocation(lastLocation: Location?) {
+        val usersRef = databaseReference!!.child("users")
+        val map:HashMap<String,com.app.childrenlocation.model.Location>?=HashMap()
+        map!!.put(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID),com.app.childrenlocation.model.Location(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID),lastLocation!!.latitude,lastLocation!!.longitude))
+        databaseReference!!.setValue(map)
         mLocation=lastLocation!!
+
         EventBus.getDefault().postSticky(BackgroundLocation(mLocation!!))
         if(serviceIsRunningInForeground(this))
             mNofiticationManager!!.notify(NOTIFICATION_ID,notification)
