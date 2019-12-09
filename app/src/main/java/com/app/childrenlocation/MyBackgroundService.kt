@@ -14,7 +14,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import org.greenrobot.eventbus.EventBus
-import java.lang.Exception
+
 
 class MyBackgroundService : Service() {
 
@@ -160,7 +160,8 @@ class MyBackgroundService : Service() {
     private fun onNewLocation(lastLocation: Location?) {
         val usersRef = databaseReference!!.child("users")
         val map:HashMap<String,com.app.childrenlocation.model.Location>?=HashMap()
-        map!!.put(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID),com.app.childrenlocation.model.Location(Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID),lastLocation!!.latitude,lastLocation!!.longitude))
+        map!!.put(Build.MANUFACTURER + " " + Build.MODEL + " " + Build.VERSION.RELEASE,com.app.childrenlocation.model.Location(
+            Build.MANUFACTURER + " " + Build.MODEL + " " + Build.VERSION.RELEASE,lastLocation!!.latitude,lastLocation!!.longitude))
         databaseReference!!.setValue(map)
         mLocation=lastLocation!!
 
