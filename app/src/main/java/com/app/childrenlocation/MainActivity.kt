@@ -1,10 +1,13 @@
 package com.app.childrenlocation
 
+import android.app.AlertDialog
 import android.content.*
+import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
 import android.preference.PreferenceManager
+import android.provider.Settings
 import android.util.EventLog
 import android.widget.Toast
 import com.karumi.dexter.Dexter
@@ -22,6 +25,8 @@ import java.util.*
 class MainActivity : AppCompatActivity(),SharedPreferences.OnSharedPreferenceChangeListener {
     private var mService:MyBackgroundService?=null
     private var mBound=false
+    protected var locationManager: LocationManager? = null
+
     private var mServiceConnection= object : ServiceConnection {
         override fun onServiceDisconnected(p0: ComponentName?) {
 
@@ -32,12 +37,15 @@ class MainActivity : AppCompatActivity(),SharedPreferences.OnSharedPreferenceCha
             mService=binder.service
             mBound=true
 
+
         }
 
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        locationManager =getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
         Dexter
             .withActivity(this)
             .withPermissions(Arrays.asList(android.Manifest.permission.ACCESS_COARSE_LOCATION,android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_BACKGROUND_LOCATION,
@@ -46,10 +54,22 @@ class MainActivity : AppCompatActivity(),SharedPreferences.OnSharedPreferenceCha
 
 
                 override fun onPermissionsChecked(report: MultiplePermissionsReport?) {
+                    if (!locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        showGPSDisabledAlertToUser()
+                        return
+                    }
                     request_location_update.setOnClickListener {
+                        if (!locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                            showGPSDisabledAlertToUser()
+
+                        }else
                         mService!!.requestLocationUpdates()
                     }
                     remove_location_update.setOnClickListener {
+                        if (!locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                            showGPSDisabledAlertToUser()
+
+                        }else
                         mService!!.removeLocationUpdates()
                     }
                     setButtonState(Common.requestingLocationUpdates(this@MainActivity))
@@ -65,6 +85,27 @@ class MainActivity : AppCompatActivity(),SharedPreferences.OnSharedPreferenceCha
             }).check()
     }
 
+    fun showSettingsAlert() {
+        val alertDialog = AlertDialog.Builder(this@MainActivity)
+
+        // Setting Dialog Title
+        //alertDialog.setTitle("GPS is settings");
+
+        // Setting Dialog Message
+        alertDialog.setMessage("Please enable GPS to get locations.")
+
+        // On pressing Settings button
+        alertDialog.setPositiveButton("Settings") { dialog, which ->
+            val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivity(intent)
+        }
+
+        // on pressing cancel button
+        alertDialog.setNegativeButton("Cancel") { dialog, which -> dialog.cancel() }
+
+        // Showing Alert Message
+        alertDialog.show()
+    }
     override fun onSharedPreferenceChanged(p0: SharedPreferences?, p1: String?) {
 
         if(p1.equals(Common.KEY_REQUEST_LOCATION_UPDATE))
@@ -105,5 +146,19 @@ class MainActivity : AppCompatActivity(),SharedPreferences.OnSharedPreferenceCha
             .unregisterOnSharedPreferenceChangeListener(this)
         EventBus.getDefault().unregister(this)
         super.onStop()
+    }
+
+    private fun showGPSDisabledAlertToUser() {
+        val alertDialogBuilder = AlertDialog.Builder(this@MainActivity)
+        alertDialogBuilder.setMessage("GPS is disabled in your device. Would you like to enable it?")
+            .setCancelable(false)
+            .setPositiveButton("Settings") { dialog, id ->
+                val callGPSSettingIntent =
+                    Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                startActivity(callGPSSettingIntent)
+            }
+        alertDialogBuilder.setNegativeButton("Cancel") { dialog, id -> dialog.cancel() }
+        val alert = alertDialogBuilder.create()
+        alert.show()
     }
 }

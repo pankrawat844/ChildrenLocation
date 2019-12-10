@@ -119,6 +119,7 @@ class MyBackgroundService : Service() {
             }
         }
         createLocationRequest()
+
         getLastLocation()
         val handlerThread=HandlerThread("Background")
         handlerThread.start()
@@ -160,9 +161,12 @@ class MyBackgroundService : Service() {
     private fun onNewLocation(lastLocation: Location?) {
         val usersRef = databaseReference!!.child("users")
         val map:HashMap<String,com.app.childrenlocation.model.Location>?=HashMap()
-        map!!.put(Build.MANUFACTURER + " " + Build.MODEL + " " + Build.VERSION.RELEASE,com.app.childrenlocation.model.Location(
-            Build.MANUFACTURER + " " + Build.MODEL + " " + Build.VERSION.RELEASE,lastLocation!!.latitude,lastLocation!!.longitude))
-        databaseReference!!.setValue(map)
+        map!!.put(Build.MANUFACTURER + " " + Build.MODEL ,com.app.childrenlocation.model.Location(
+            Build.MANUFACTURER + " " + Build.MODEL ,lastLocation!!.latitude,lastLocation!!.longitude))
+        databaseReference!!.child(
+            Build.MANUFACTURER + " " + Build.MODEL).setValue(com.app.childrenlocation.model.Location(
+            Build.MANUFACTURER + " " + Build.MODEL ,lastLocation!!.latitude,lastLocation!!.longitude))
+
         mLocation=lastLocation!!
 
         EventBus.getDefault().postSticky(BackgroundLocation(mLocation!!))
@@ -193,7 +197,7 @@ class MyBackgroundService : Service() {
         try {
             fusedLocationProviderClient!!.requestLocationUpdates(locationRequest,locationCallback!!,
                 Looper.myLooper())
-        }catch (ex:SecurityException)
+        }catch (ex:Exception)
         {
             Common.setReqestingLocationUpdates(this,false)
             Log.e("error","Lost location"+ex.message)
